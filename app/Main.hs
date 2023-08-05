@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
+import Data.Monoid (mconcat)
+import Network.Wai.Middleware.RequestLogger (logStdout)
 import Web.Scotty
 
-import Data.Monoid (mconcat)
-
-
 main :: IO ()
-main = scotty 3000 $
-    get "/:word" $ do
-        beam <- param "word"
-        html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]
+main = scotty 3000 $ do
+  middleware logStdout
+  get "/:name" $ do
+    name <- param "name"
+    text $ "Hello " <> name
