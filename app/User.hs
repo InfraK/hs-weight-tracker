@@ -1,11 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module User (User (..), CreateUser (..), users, createUser) where
+module User (User (..), CreateUser (..), findUsers, createUser) where
 
 import Data.Aeson
+import Database.PostgreSQL.Simple (Connection, FromRow, query_)
+import Database.PostgreSQL.Simple.FromRow (FromRow (fromRow), field)
 
 data User = User
-  { userId :: String,
+  { userId :: Int,
     userEmail :: String
   }
 
@@ -16,6 +18,9 @@ instance ToJSON User where
         "email" .= email
       ]
 
+instance FromRow User where
+  fromRow = User <$> field <*> field
+
 data CreateUser = CreateUser
   { createUserEmail :: String
   }
@@ -25,10 +30,7 @@ instance FromJSON CreateUser where
   parseJSON _ = fail "invalid input"
 
 createUser :: CreateUser -> User
-createUser (CreateUser email) = User {userId = "uid-11", userEmail = email}
+createUser (CreateUser email) = User {userId = 1, userEmail = email}
 
-users :: [User]
-users = [santi]
-
-santi :: User
-santi = User {userId = "uid-1", userEmail = "santiagokent@gmail.com"}
+findUsers :: Connection -> IO [User]
+findUsers conn = query_ conn "SELECT * FROM users;"

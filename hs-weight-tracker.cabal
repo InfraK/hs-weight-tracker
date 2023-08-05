@@ -32,11 +32,11 @@ executable hs-weight-tracker
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules:    Routes, User
+    other-modules:    Db, Routes, User
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:    aeson, scotty, text, wai-extra
+    build-depends:    aeson, scotty, text, postgresql-simple, wai-extra
     hs-source-dirs:   app
     default-language: Haskell2010
     ghc-options:
