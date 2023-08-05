@@ -1,14 +1,11 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Main where
 
-import Data.Monoid (mconcat)
-import Network.Wai.Middleware.RequestLogger (logStdout)
+import Routes (routes)
 import Web.Scotty
 
+port :: Int
+port = 3000
+
 main :: IO ()
-main = scotty 3000 $ do
-  middleware logStdout
-  get "/:name" $ do
-    name <- param "name"
-    text $ "Hello " <> name
+main =
+  scotty port routes
