@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module User (User (..), users) where
+module User (User (..), CreateUser (..), users, createUser) where
 
 import Data.Aeson
 
@@ -15,6 +15,17 @@ instance ToJSON User where
       [ "id" .= uid,
         "email" .= email
       ]
+
+data CreateUser = CreateUser
+  { createUserEmail :: String
+  }
+
+instance FromJSON CreateUser where
+  parseJSON (Object v) = CreateUser <$> v .: "email"
+  parseJSON _ = fail "invalid input"
+
+createUser :: CreateUser -> User
+createUser (CreateUser email) = User {userId = "uid-11", userEmail = email}
 
 users :: [User]
 users = [santi]
