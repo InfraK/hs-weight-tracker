@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module User (User (..), CreateUser (..), findUsers, createUser) where
+module User (User (..), CreateUser (..), findUsers, findUser, createUser) where
 
 import Data.Aeson
-import Database.PostgreSQL.Simple (Connection, FromRow, query_)
+import Database.PostgreSQL.Simple (Connection, FromRow, Only (Only), query, query_)
 import Database.PostgreSQL.Simple.FromRow (FromRow (fromRow), field)
 
 data User = User
@@ -29,8 +29,22 @@ instance FromJSON CreateUser where
   parseJSON (Object v) = CreateUser <$> v .: "email"
   parseJSON _ = fail "invalid input"
 
-createUser :: CreateUser -> User
-createUser (CreateUser email) = User {userId = 1, userEmail = email}
+createUser :: Connection -> CreateUser -> IO [User]
+createUser conn (CreateUser email) =
+  query
+    conn
+    "INSERT INTO users (email) VALUES (?) RETURNING *"
+    $ Only email
 
 findUsers :: Connection -> IO [User]
-findUsers conn = query_ conn "SELECT * FROM users;"
+findUsers conn =
+  query_
+    conn
+    "SELECT * FROM users;"
+
+findUser :: Connection -> Int -> IO [User]
+findUser conn uid =
+  query
+    conn
+    "SELECT * FROM users where id = ?"
+    $ Only uid
