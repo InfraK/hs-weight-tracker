@@ -5,21 +5,24 @@ module User (User (..), CreateUser (..), findUsers, findUser, createUser) where
 import Data.Aeson
 import Database.PostgreSQL.Simple (Connection, FromRow, Only (Only), query, query_)
 import Database.PostgreSQL.Simple.FromRow (FromRow (fromRow), field)
+import Data.Time (UTCTime)
 
 data User = User
   { userId :: Int,
-    userEmail :: String
+    userEmail :: String,
+    userCreatedAt :: UTCTime
   }
 
 instance ToJSON User where
-  toJSON (User uid email) =
+  toJSON (User uid email createdAt) =
     object
       [ "id" .= uid,
-        "email" .= email
+        "email" .= email,
+        "createdAt" .= createdAt
       ]
 
 instance FromRow User where
-  fromRow = User <$> field <*> field
+  fromRow = User <$> field <*> field <*> field
 
 data CreateUser = CreateUser
   { createUserEmail :: String

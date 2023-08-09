@@ -36,7 +36,7 @@ executable hs-weight-tracker
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
-    build-depends:    aeson, scotty, text, postgresql-simple, wai-extra
+    build-depends:    aeson, scotty, text, postgresql-simple, time, wai-extra
     hs-source-dirs:   app
     default-language: Haskell2010
     ghc-options:

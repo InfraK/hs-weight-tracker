@@ -5,21 +5,24 @@ module Weight (Weight (..), CreateWeight (..), createWeight, findWeights) where
 import Data.Aeson
 import Database.PostgreSQL.Simple (Connection, Only (Only), query, query_)
 import Database.PostgreSQL.Simple.FromRow (FromRow (fromRow), field)
+import Data.Time (UTCTime)
 
 data Weight = Weight
   { weightId :: Int,
-    weightWeightGrams :: Int
+    weightWeightGrams :: Int,
+    weightCreatedAt :: UTCTime
   }
 
 instance ToJSON Weight where
-  toJSON (Weight wid grams) =
+  toJSON (Weight wid grams createdAt) =
     object
       [ "id" .= wid,
-        "weightGrams" .= grams
+        "weightGrams" .= grams,
+        "createdAt" .= createdAt
       ]
 
 instance FromRow Weight where
-  fromRow = Weight <$> field <*> field
+  fromRow = Weight <$> field <*> field <*> field
 
 data CreateWeight = CreateWeight
   { createWeightGrams :: Int
@@ -40,4 +43,4 @@ findWeights :: Connection -> IO [Weight]
 findWeights conn =
   query_
     conn
-    "SELECT id, weight_grams FROM weights"
+    "SELECT * FROM weights"
