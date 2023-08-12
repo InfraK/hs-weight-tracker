@@ -22,22 +22,30 @@ maintainer:         santiagokent@gmail.com
 extra-source-files: CHANGELOG.md
 
 common common-settings
-    default-language: Haskell2010
-    build-depends: base ^>=4.16.4.0
-    ghc-options:
-      -Wall
+  default-language: Haskell2010
+  build-depends:    base ^>=4.16.4.0
+  ghc-options:      -Wall
+
+library
+  import:          common-settings
+  hs-source-dirs:  src
+  exposed-modules:
+    Db
+    Lib
+    Routes
+    User
+    Weight
+
+  build-depends:
+    , aeson
+    , postgresql-simple
+    , scotty
+    , text
+    , time
+    , wai-extra
 
 executable hs-weight-tracker
-    import: common-settings
-    main-is:          Main.hs
-
-    -- Modules included in this executable, other than Main.
-    other-modules:    Db, Routes, User, Weight
-
-    -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
-    build-depends:    aeson, scotty, text, postgresql-simple, time, wai-extra
-    hs-source-dirs:   app
-    default-language: Haskell2010
-    ghc-options:
-      -O
+  import:         common-settings
+  main-is:        Main.hs
+  build-depends:  hs-weight-tracker
+  hs-source-dirs: app

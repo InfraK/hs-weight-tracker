@@ -1,11 +1,6 @@
 module Main where
 
-import Routes (routes)
-import Web.Scotty
-
-port :: Int
-port = 3000
+import Lib (start)
 
 main :: IO ()
-main =
-  scotty port routes
+main = start
