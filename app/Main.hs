@@ -1,6 +1,18 @@
 module Main where
 
 import Lib (start)
+import Lib.Config (DBConfig (DBConfig))
+import System.Posix.Env (getEnvDefault)
 
 main :: IO ()
-main = start
+main = do
+  config <- readDBConfig
+  start config
+
+readDBConfig :: IO DBConfig
+readDBConfig = do
+  dbHost <- getEnvDefault "DB_HOST" "127.0.0.1"
+  dbDatabase <- getEnvDefault "DB_DATABASE" "weight"
+  dbUser <- getEnvDefault "DB_USER" "weight"
+  dbPassword <- getEnvDefault "DB_PASSWORD" "weight"
+  return $ DBConfig dbHost dbDatabase dbUser dbPassword

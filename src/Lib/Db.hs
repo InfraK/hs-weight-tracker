@@ -1,15 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module Lib.Db (getConnection) where
 
 import Database.PostgreSQL.Simple
+import Lib.Config (DBConfig (DBConfig))
 
-localPG :: ConnectInfo
-localPG = defaultConnectInfo
-        { connectHost = "127.0.0.1"
-        , connectDatabase = "weight"
-        , connectUser = "weight"
-        , connectPassword = "weight"
-        }
-
-getConnection :: IO Connection
-getConnection = connect localPG
+getConnection :: DBConfig -> IO Connection
+getConnection (DBConfig host db user pwd) =
+  connect $
+    defaultConnectInfo
+      { connectHost = host,
+        connectDatabase = db,
+        connectUser = user,
+        connectPassword = pwd
+      }

@@ -3,9 +3,9 @@
 module Lib.Routes (routes) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
-import Lib.Db (getConnection)
-import Network.Wai.Middleware.RequestLogger (logStdout)
 import Lib.User (CreateUser (CreateUser), createUser, findUser, findUsers)
+import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
+import Network.Wai.Middleware.RequestLogger (logStdout)
 import Web.Scotty
   ( ScottyM,
     get,
@@ -15,38 +15,32 @@ import Web.Scotty
     param,
     post,
   )
-import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
+import Database.PostgreSQL.Simple (Connection)
 
-routes :: ScottyM ()
-routes = do
+routes :: Connection -> ScottyM ()
+routes conn = do
   middleware logStdout
-
   -- Users
   get "/users" $ do
-    conn <- liftIO $ getConnection
     users <- liftIO $ findUsers conn
     json $ users
 
   get "/users/:uid" $ do
     uid <- param "uid"
-    conn <- liftIO $ getConnection
     [user] <- liftIO $ findUser conn uid
     json $ user
 
   post "/users" $ do
     (CreateUser email) <- jsonData
-    conn <- liftIO $ getConnection
     [user] <- liftIO $ createUser conn (CreateUser email)
     json $ user
 
   -- Weights
   get "/users/:uid/weights" $ do
-    conn <- liftIO $ getConnection
     weights <- liftIO $ findWeights conn
     json $ weights
 
   post "/users/:uid/weights" $ do
     (CreateWeight grams) <- jsonData
-    conn <- liftIO $ getConnection
     [weight] <- liftIO $ createWeight conn (CreateWeight grams)
     json $ weight
