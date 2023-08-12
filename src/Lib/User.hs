@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module User (User (..), CreateUser (..), findUsers, findUser, createUser) where
+module Lib.User (User (..), CreateUser (..), findUsers, findUser, createUser) where
 
 import Data.Aeson
 import Database.PostgreSQL.Simple (Connection, FromRow, Only (Only), query, query_)

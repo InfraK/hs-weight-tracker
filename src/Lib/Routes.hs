@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Routes (routes) where
+module Lib.Routes (routes) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
-import Db (getConnection)
+import Lib.Db (getConnection)
 import Network.Wai.Middleware.RequestLogger (logStdout)
-import User (CreateUser (CreateUser), createUser, findUser, findUsers)
+import Lib.User (CreateUser (CreateUser), createUser, findUser, findUsers)
 import Web.Scotty
   ( ScottyM,
     get,
@@ -15,7 +15,7 @@ import Web.Scotty
     param,
     post,
   )
-import Weight (CreateWeight (CreateWeight), createWeight, findWeights)
+import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
 
 routes :: ScottyM ()
 routes = do

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Weight (Weight (..), CreateWeight (..), createWeight, findWeights) where
+module Lib.Weight (Weight (..), CreateWeight (..), createWeight, findWeights) where
 
 import Data.Aeson
 import Database.PostgreSQL.Simple (Connection, Only (Only), query, query_)

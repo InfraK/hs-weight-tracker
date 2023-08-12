@@ -1,6 +1,6 @@
 module Lib (start) where
 
-import Routes (routes)
+import Lib.Routes (routes)
 import Web.Scotty
 
 port :: Int

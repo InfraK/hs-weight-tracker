@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Db (getConnection) where
+module Lib.Db (getConnection) where
 
 import Database.PostgreSQL.Simple
 

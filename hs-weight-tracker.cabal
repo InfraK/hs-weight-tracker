@@ -30,11 +30,11 @@ library
   import:          common-settings
   hs-source-dirs:  src
   exposed-modules:
-    Db
     Lib
-    Routes
-    User
-    Weight
+    Lib.Db
+    Lib.Routes
+    Lib.User
+    Lib.Weight
 
   build-depends:
     , aeson
