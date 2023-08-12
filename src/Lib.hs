@@ -1,14 +1,11 @@
 module Lib (start) where
 
+import Lib.Config (Config (Config), ServerConfig (ServerConfig))
+import Lib.Db (getConnection)
 import Lib.Routes (routes)
 import Web.Scotty
-import Lib.Config (DBConfig)
-import Lib.Db (getConnection)
 
-port :: Int
-port = 3000
-
-start :: DBConfig -> IO ()
-start config = do
-  conn <- getConnection config
+start :: Config -> IO ()
+start (Config db (ServerConfig port)) = do
+  conn <- getConnection db
   scotty port $ routes conn

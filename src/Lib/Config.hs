@@ -1,8 +1,17 @@
-module Lib.Config (DBConfig (..)) where
+module Lib.Config (Config (..), DBConfig (..), ServerConfig (..)) where
+
+data Config = Config
+  { dbConfig :: DBConfig,
+    svConfig :: ServerConfig
+  }
 
 data DBConfig = DBConfig
-  { configDBHost :: String,
-    configDBDatabase :: String,
-    configDBUser :: String,
-    configDBPassword :: String
+  { dbConfigDBHost :: String,
+    dbConfigDBDatabase :: String,
+    dbConfigDBUser :: String,
+    dbConfigDBPassword :: String
+  }
+
+data ServerConfig = ServerConfig
+  { serverConfigPort :: Int
   }
