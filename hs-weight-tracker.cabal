@@ -22,15 +22,17 @@ maintainer:         santiagokent@gmail.com
 extra-source-files: CHANGELOG.md
 
 common common-settings
-  default-language: Haskell2010
-  build-depends:    base ^>=4.16.4.0
-  ghc-options:      -Wall
+  default-language:   Haskell2010
+  default-extensions: OverloadedStrings
+  build-depends:      base ^>=4.16.4.0
+  ghc-options:        -Wall
 
 library
   import:          common-settings
   hs-source-dirs:  src
   exposed-modules:
     Lib
+    Lib.Auth
     Lib.Config
     Lib.Db
     Lib.Routes
@@ -39,6 +41,9 @@ library
 
   build-depends:
     , aeson
+    , cryptonite
+    , bytestring
+    , jose-jwt
     , postgresql-simple
     , scotty
     , text

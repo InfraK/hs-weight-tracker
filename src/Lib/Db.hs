@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Lib.Db (getConnection) where
 
 import Database.PostgreSQL.Simple

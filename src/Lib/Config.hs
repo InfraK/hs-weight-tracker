@@ -1,4 +1,6 @@
-module Lib.Config (Config (..), DBConfig (..), ServerConfig (..)) where
+module Lib.Config (Config (..), DBConfig (..), ServerConfig (..), JwtConfig (..)) where
+
+import Data.Text (Text)
 
 data Config = Config
   { dbConfig :: DBConfig,
@@ -14,4 +16,9 @@ data DBConfig = DBConfig
 
 data ServerConfig = ServerConfig
   { serverConfigPort :: Int
+  }
+
+data JwtConfig = JwtConfig
+  { jwtConfigExpMinutes :: Int,
+    jwtConfigKey :: Text
   }
