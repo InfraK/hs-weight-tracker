@@ -32,7 +32,8 @@ library
   hs-source-dirs:  src
   exposed-modules:
     Lib
-    Lib.Auth
+    Lib.Auth.Http
+    Lib.Auth.Jwt
     Lib.Config
     Lib.Db
     Lib.Routes

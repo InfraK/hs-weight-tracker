@@ -1,11 +1,10 @@
-module Lib.Auth (encodeDecodePrint, sign, verify, privateJwk) where
+module Lib.Auth.Jwt (sign, verify, generateJwk, TokenError (..), CurrentUser, Token, UserId) where
 
 import Control.Monad
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Crypto.Random (MonadRandom)
 import qualified Data.Aeson as Aeson
 import Data.Bifunctor (first)
-import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
@@ -17,10 +16,11 @@ import Jose.Jwk (Jwk, KeyUse (Sig), generateRsaKeyPair)
 import Jose.Jwt
 import Lib.Config (JwtConfig (JwtConfig))
 
-data AuthData = AuthData
-  { authDataSub :: String
-  }
-  deriving (Show)
+type Token = T.Text
+
+type UserId = String
+
+type CurrentUser = (Token, UserId)
 
 data TokenError
   = TokenNotFound
@@ -39,7 +39,7 @@ sign jwk (JwtConfig expMinutes _) sub = do
       return jwt
     _ -> error "Could not sign JWT, check config"
 
-verify :: (MonadIO m, MonadRandom m) => Jwk -> T.Text -> m (Either TokenError AuthData)
+verify :: (MonadIO m, MonadRandom m) => Jwk -> T.Text -> m (Either TokenError CurrentUser)
 verify jwk jwt = do
   eitherJwt <- decode [jwk] (Just encAlg) (T.encodeUtf8 jwt)
   curTime <- liftIO getPOSIXTime
@@ -54,12 +54,7 @@ verify jwk jwt = do
     uid <- case jwtSub jwtClaims of
       Just sub -> Right $ T.unpack sub
       Nothing -> Left TokenErrorUserIdNotFound
-    return $ AuthData uid
-
-privateJwk :: JwtConfig -> IO Jwk
-privateJwk (JwtConfig _ key) = do
-  (_, privKey) <- generateRsaKeyPair 256 (KeyId key) Sig (Just (Signed RS256))
-  return privKey
+    return (jwt, uid)
 
 makeJwtClaims :: T.Text -> NominalDiffTime -> IO JwtClaims
 makeJwtClaims sub expMinutes = do
@@ -78,22 +73,10 @@ makeJwtClaims sub expMinutes = do
 makePayload :: JwtClaims -> Payload
 makePayload claims = Claims $ BL.toStrict $ Aeson.encode claims
 
+generateJwk :: JwtConfig -> IO Jwk
+generateJwk (JwtConfig _ key) = do
+  (_, privKey) <- generateRsaKeyPair 256 (KeyId key) Sig (Just (Signed RS256))
+  return privKey
+
 encAlg :: JwtEncoding
 encAlg = JwsEncoding RS256
-
-encodeDecodePrint :: IO ()
-encodeDecodePrint = do
-  let config = JwtConfig 60 "myawesomekey"
-  jwk <- privateJwk config
-  jwt <- sign jwk config "uuid"
-  print jwt
-  print $ unJwt jwt
-  content <- verify jwk (bsToText $ unJwt jwt)
-  case content of
-    Right (AuthData uid) -> do
-      print uid
-    (Left err) -> do
-      print err
-
-bsToText :: B.ByteString -> T.Text
-bsToText = T.decodeUtf8
