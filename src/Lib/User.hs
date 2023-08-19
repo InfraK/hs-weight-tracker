@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Lib.User (User (..), CreateUser (..), findUsers, findUser, createUser) where
+module Lib.User (User (..), CreateUser (..), findUsers, findUser, findByEmail, createUser) where
 
 import Data.Aeson
+import Data.Time (UTCTime)
 import Database.PostgreSQL.Simple (Connection, FromRow, Only (Only), query, query_)
 import Database.PostgreSQL.Simple.FromRow (FromRow (fromRow), field)
-import Data.Time (UTCTime)
 
 data User = User
   { userId :: Int,
@@ -51,3 +51,10 @@ findUser conn uid =
     conn
     "SELECT * FROM users where id = ?"
     $ Only uid
+
+findByEmail :: Connection -> String -> IO [User]
+findByEmail conn email =
+  query
+    conn
+    "SELECT * FROM users where email = ?"
+    $ Only email

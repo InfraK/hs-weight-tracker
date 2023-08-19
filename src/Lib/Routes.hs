@@ -4,16 +4,17 @@ module Lib.Routes (routes) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
 import Database.PostgreSQL.Simple (Connection)
-import Lib.User (CreateUser (CreateUser), createUser, findUser, findUsers)
+import Jose.Jwk (Jwk)
+import Lib.Auth.Http (AuthForm (AuthForm), TokenPayload (TokenPayload), reqUser)
+import Lib.Auth.Jwt (sign)
+import Lib.Config (JwtConfig (JwtConfig))
+import Lib.User (CreateUser (CreateUser), User (userEmail), createUser, findByEmail, findUser, findUsers)
 import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
 import Network.Wai.Middleware.RequestLogger (logStdout)
 import Web.Scotty
-  ( ActionM,
-    ScottyM,
+  ( ScottyM,
     get,
-    header,
     json,
     jsonData,
     middleware,
@@ -21,28 +22,33 @@ import Web.Scotty
     post,
   )
 
-routes :: Connection -> ScottyM ()
-routes conn = do
+routes :: Connection -> Jwk -> ScottyM ()
+routes conn jwk = do
   middleware logStdout
 
   -- Users
+  post "/login" $ do
+    -- TODO Not yet using passwords at all
+    (AuthForm email _) <- jsonData
+    [user] <- liftIO $ Lib.User.findByEmail conn email
+    -- TODO Refactor so that JwtConfig is only used once
+    token <- liftIO $ sign jwk (JwtConfig 60 "") $ T.pack $ userEmail user
+    json $ TokenPayload token
+
   get "/users" $ do
-    users <- liftIO $ findUsers conn
+    users <- liftIO $ Lib.User.findUsers conn
     json users
 
   get "/users/:uid" $ do
-    authHeader <- header "Authorization"
-    liftIO $ print authHeader
-    authToken <- getAuthToken
-    liftIO $ print authToken
-
+    authUser <- reqUser
+    liftIO $ print authUser
     uid <- param "uid"
-    [user] <- liftIO $ findUser conn uid
+    [user] <- liftIO $ Lib.User.findUser conn uid
     json user
 
   post "/users" $ do
-    (CreateUser email) <- jsonData
-    [user] <- liftIO $ createUser conn (CreateUser email)
+    (Lib.User.CreateUser email) <- jsonData
+    [user] <- liftIO $ Lib.User.createUser conn (Lib.User.CreateUser email)
     json user
 
   -- Weights
@@ -54,18 +60,3 @@ routes conn = do
     (CreateWeight grams) <- jsonData
     [weight] <- liftIO $ createWeight conn (CreateWeight grams)
     json weight
-
-data AuthError
-  = TokenNotFound
-  deriving (Eq, Show)
-
-type Token = T.Text
-
-getAuthToken :: ActionM (Either AuthError Token)
-getAuthToken = do
-  maybeHeader <- header "Authorization"
-  case maybeHeader of
-    Just str -> do
-      let token = TL.toStrict $ last $ TL.words str
-      return $ Right token
-    Nothing -> return $ Left TokenNotFound

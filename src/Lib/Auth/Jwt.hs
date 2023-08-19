@@ -29,9 +29,9 @@ data TokenError
   | TokenErrorUserIdNotFound
   deriving (Eq, Show)
 
-sign :: Jwk -> JwtConfig -> T.Text -> IO Jwt
+sign :: (MonadIO m, MonadRandom m) => Jwk -> JwtConfig -> T.Text -> m Jwt
 sign jwk (JwtConfig expMinutes _) sub = do
-  claims <- makeJwtClaims sub (fromIntegral expMinutes)
+  claims <- liftIO $ makeJwtClaims sub (fromIntegral expMinutes)
   let payload = makePayload claims
   eitherJwt <- encode [jwk] encAlg payload
   case eitherJwt of
