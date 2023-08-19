@@ -1,9 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
+
 module Lib.Auth.Jwt (sign, verify, generateJwk, TokenError (..), CurrentUser, Token, UserId) where
 
 import Control.Monad
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Crypto.Random (MonadRandom)
+import Data.Aeson (ToJSON)
 import qualified Data.Aeson as Aeson
 import Data.Bifunctor (first)
 import qualified Data.ByteString.Lazy as BL
@@ -12,12 +14,12 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
+import GHC.Generics (Generic)
 import Jose.Jwa
 import Jose.Jwk (Jwk, KeyUse (Sig), generateRsaKeyPair)
 import Jose.Jwt
 import Lib.Platform.Config (JwtConfig (JwtConfig))
-import Data.Aeson (ToJSON)
-import GHC.Generics (Generic)
+
 type Token = T.Text
 
 type UserId = String

@@ -1,10 +1,10 @@
 module Lib (start) where
 
-import Lib.Platform.Config (Config (Config), ServerConfig (ServerConfig), JwtConfig (JwtConfig))
+import Lib.Auth.Jwt (generateJwk, sign, verify)
+import Lib.Platform.Config (Config (Config), JwtConfig (JwtConfig), ServerConfig (ServerConfig))
 import Lib.Platform.Db (getConnection)
 import Lib.Routes (routes)
 import Web.Scotty
-import Lib.Auth.Jwt (generateJwk)
 
 start :: Config -> IO ()
 start (Config db (ServerConfig port)) = do
@@ -12,4 +12,6 @@ start (Config db (ServerConfig port)) = do
   -- TODO pick up JWTConfig from env
   let config = JwtConfig 60 "myawesomekey"
   jwk <- generateJwk config
-  scotty port $ routes conn jwk
+  let signToken = sign jwk config
+  let verifyToken = verify jwk
+  scotty port $ routes conn signToken verifyToken

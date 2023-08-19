@@ -5,10 +5,9 @@ module Lib.Routes (routes) where
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import qualified Data.Text as T
 import Database.PostgreSQL.Simple (Connection)
-import Jose.Jwk (Jwk)
+import Jose.Jwt (Jwt)
 import Lib.Auth.Http (AuthForm (AuthForm), TokenPayload (TokenPayload), reqUser)
-import Lib.Auth.Jwt (sign, verify)
-import Lib.Platform.Config (JwtConfig (JwtConfig))
+import Lib.Auth.Jwt (CurrentUser, Token, TokenError)
 import Lib.User (CreateUser (CreateUser), User (userEmail), createUser, findByEmail, findUser, findUsers)
 import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
 import Network.Wai.Middleware.RequestLogger (logStdout)
@@ -22,8 +21,8 @@ import Web.Scotty
     post,
   )
 
-routes :: Connection -> Jwk -> ScottyM ()
-routes conn jwk = do
+routes :: Connection -> (Token -> IO Jwt) -> (Token -> IO (Either TokenError CurrentUser)) -> ScottyM ()
+routes conn signToken verifyToken = do
   middleware logStdout
 
   -- Users
@@ -31,8 +30,7 @@ routes conn jwk = do
     -- TODO Not yet using passwords at all
     (AuthForm email _) <- jsonData
     [user] <- liftIO $ Lib.User.findByEmail conn email
-    -- TODO Refactor so that JwtConfig is only used once
-    token <- liftIO $ sign jwk (JwtConfig 60 "") $ T.pack $ userEmail user
+    token <- liftIO $ signToken $ T.pack $ userEmail user
     json $ TokenPayload token
 
   get "/users" $ do
@@ -40,8 +38,7 @@ routes conn jwk = do
     json users
 
   get "/users/:uid" $ do
-    authUser <- reqUser $ verify jwk
-    liftIO $ print authUser
+    _ <- reqUser verifyToken
     uid <- param "uid"
     [user] <- liftIO $ Lib.User.findUser conn uid
     json user
