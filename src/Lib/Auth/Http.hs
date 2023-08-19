@@ -10,7 +10,7 @@ import qualified Data.Text.Lazy as TL
 import GHC.Generics (Generic)
 import Jose.Jwt (Jwt (unJwt))
 import Lib.Auth.Jwt (CurrentUser, generateJwk, sign, verify)
-import Lib.Config (JwtConfig (JwtConfig))
+import Lib.Platform.Config (JwtConfig (JwtConfig))
 import Network.HTTP.Types.Status (status401)
 import Web.Scotty (ActionM, finish, header, json, status)
 import Web.Scotty.Trans (ActionT)

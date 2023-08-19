@@ -14,7 +14,7 @@ import Data.Time.Clock.POSIX
 import Jose.Jwa
 import Jose.Jwk (Jwk, KeyUse (Sig), generateRsaKeyPair)
 import Jose.Jwt
-import Lib.Config (JwtConfig (JwtConfig))
+import Lib.Platform.Config (JwtConfig (JwtConfig))
 
 type Token = T.Text
 

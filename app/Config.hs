@@ -1,6 +1,6 @@
 module Config (readDBConfig, readServerConfig) where
 
-import Lib.Config (DBConfig (DBConfig), ServerConfig (ServerConfig))
+import Lib.Platform.Config (DBConfig (DBConfig), ServerConfig (ServerConfig))
 import System.Posix.Env (getEnvDefault)
 
 readDBConfig :: IO DBConfig

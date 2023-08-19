@@ -2,7 +2,7 @@ module Main where
 
 import Config
 import Lib (start)
-import Lib.Config (Config (Config))
+import Lib.Platform.Config (Config (Config))
 
 main :: IO ()
 main = do

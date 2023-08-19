@@ -34,8 +34,8 @@ library
     Lib
     Lib.Auth.Http
     Lib.Auth.Jwt
-    Lib.Config
-    Lib.Db
+    Lib.Platform.Config
+    Lib.Platform.Db
     Lib.Routes
     Lib.User
     Lib.Weight

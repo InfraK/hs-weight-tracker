@@ -1,7 +1,7 @@
 module Lib (start) where
 
-import Lib.Config (Config (Config), ServerConfig (ServerConfig), JwtConfig (JwtConfig))
-import Lib.Db (getConnection)
+import Lib.Platform.Config (Config (Config), ServerConfig (ServerConfig), JwtConfig (JwtConfig))
+import Lib.Platform.Db (getConnection)
 import Lib.Routes (routes)
 import Web.Scotty
 import Lib.Auth.Jwt (generateJwk)

@@ -1,4 +1,4 @@
-module Lib.Config (Config (..), DBConfig (..), ServerConfig (..), JwtConfig (..)) where
+module Lib.Platform.Config (Config (..), DBConfig (..), ServerConfig (..), JwtConfig (..)) where
 
 import Data.Text (Text)
 

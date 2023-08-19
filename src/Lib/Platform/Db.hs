@@ -1,7 +1,7 @@
-module Lib.Db (getConnection) where
+module Lib.Platform.Db (getConnection) where
 
 import Database.PostgreSQL.Simple
-import Lib.Config (DBConfig (DBConfig))
+import Lib.Platform.Config (DBConfig (DBConfig))
 
 getConnection :: DBConfig -> IO Connection
 getConnection (DBConfig host db user pwd) =
