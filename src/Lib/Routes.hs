@@ -7,7 +7,7 @@ import qualified Data.Text as T
 import Database.PostgreSQL.Simple (Connection)
 import Jose.Jwk (Jwk)
 import Lib.Auth.Http (AuthForm (AuthForm), TokenPayload (TokenPayload), reqUser)
-import Lib.Auth.Jwt (sign)
+import Lib.Auth.Jwt (sign, verify)
 import Lib.Platform.Config (JwtConfig (JwtConfig))
 import Lib.User (CreateUser (CreateUser), User (userEmail), createUser, findByEmail, findUser, findUsers)
 import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
@@ -40,7 +40,7 @@ routes conn jwk = do
     json users
 
   get "/users/:uid" $ do
-    authUser <- reqUser
+    authUser <- reqUser $ verify jwk
     liftIO $ print authUser
     uid <- param "uid"
     [user] <- liftIO $ Lib.User.findUser conn uid

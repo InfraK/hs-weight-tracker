@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Lib.Auth.Jwt (sign, verify, generateJwk, TokenError (..), CurrentUser, Token, UserId) where
 
 import Control.Monad
@@ -15,7 +16,8 @@ import Jose.Jwa
 import Jose.Jwk (Jwk, KeyUse (Sig), generateRsaKeyPair)
 import Jose.Jwt
 import Lib.Platform.Config (JwtConfig (JwtConfig))
-
+import Data.Aeson (ToJSON)
+import GHC.Generics (Generic)
 type Token = T.Text
 
 type UserId = String
@@ -27,9 +29,11 @@ data TokenError
   | TokenErrorMalformed String
   | TokenErrorExpired
   | TokenErrorUserIdNotFound
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
-sign :: (MonadIO m, MonadRandom m) => Jwk -> JwtConfig -> T.Text -> m Jwt
+instance ToJSON TokenError
+
+sign :: (MonadIO m, MonadRandom m) => Jwk -> JwtConfig -> Token -> m Jwt
 sign jwk (JwtConfig expMinutes _) sub = do
   claims <- liftIO $ makeJwtClaims sub (fromIntegral expMinutes)
   let payload = makePayload claims
@@ -39,7 +43,7 @@ sign jwk (JwtConfig expMinutes _) sub = do
       return jwt
     _ -> error "Could not sign JWT, check config"
 
-verify :: (MonadIO m, MonadRandom m) => Jwk -> T.Text -> m (Either TokenError CurrentUser)
+verify :: (MonadIO m, MonadRandom m) => Jwk -> Token -> m (Either TokenError CurrentUser)
 verify jwk jwt = do
   eitherJwt <- decode [jwk] (Just encAlg) (T.encodeUtf8 jwt)
   curTime <- liftIO getPOSIXTime
