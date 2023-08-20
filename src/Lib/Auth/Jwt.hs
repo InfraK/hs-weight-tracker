@@ -22,7 +22,7 @@ import Lib.Platform.Config (JwtConfig (JwtConfig))
 
 type Token = T.Text
 
-type UserId = String
+type UserId = Int
 
 type CurrentUser = (Token, UserId)
 
@@ -35,9 +35,9 @@ data TokenError
 
 instance ToJSON TokenError
 
-sign :: (MonadIO m, MonadRandom m) => Jwk -> JwtConfig -> Token -> m Jwt
+sign :: (MonadIO m, MonadRandom m) => Jwk -> JwtConfig -> UserId -> m Jwt
 sign jwk (JwtConfig expMinutes _) sub = do
-  claims <- liftIO $ makeJwtClaims sub (fromIntegral expMinutes)
+  claims <- liftIO $ makeJwtClaims (T.pack $ show sub) (fromIntegral expMinutes)
   let payload = makePayload claims
   eitherJwt <- encode [jwk] encAlg payload
   case eitherJwt of
@@ -58,7 +58,7 @@ verify jwk jwt = do
     let (IntDate expiredAt) = fromMaybe (IntDate curTime) $ jwtExp jwtClaims
     when (expiredAt < curTime) $ Left TokenErrorExpired
     uid <- case jwtSub jwtClaims of
-      Just sub -> Right $ T.unpack sub
+      Just sub -> Right $ read $ T.unpack sub
       Nothing -> Left TokenErrorUserIdNotFound
     return (jwt, uid)
 

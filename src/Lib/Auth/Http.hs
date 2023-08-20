@@ -7,7 +7,7 @@ import Data.Aeson
 import qualified Data.Text.Lazy as TL
 import Jose.Jwt (Jwt)
 import Lib.Auth.Jwt (CurrentUser, Token, TokenError (TokenNotFound))
-import Network.HTTP.Types.Status (status401)
+import Network.HTTP.Types.Status (status401, status403)
 import Web.Scotty (ActionM, finish, header, json, status)
 import Web.Scotty.Trans (ActionT)
 
@@ -52,3 +52,6 @@ getAuthToken = do
   return $ parseHeader <$> maybeHeader
   where
     parseHeader txt = TL.toStrict $ last $ TL.words txt
+
+returnForbidden :: ActionM ()
+returnForbidden = status status403 >> finish

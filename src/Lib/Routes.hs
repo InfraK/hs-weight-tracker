@@ -2,13 +2,13 @@
 
 module Lib.Routes (routes) where
 
+import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO (liftIO))
-import qualified Data.Text as T
 import Database.PostgreSQL.Simple (Connection)
 import Jose.Jwt (Jwt)
-import Lib.Auth.Http (AuthForm (AuthForm), TokenPayload (TokenPayload), reqUser)
-import Lib.Auth.Jwt (CurrentUser, Token, TokenError)
-import Lib.User (CreateUser (CreateUser), User (userEmail), createUser, findByEmail, findUser, findUsers)
+import Lib.Auth.Http (AuthForm (AuthForm), TokenPayload (TokenPayload), reqUser, returnForbidden)
+import Lib.Auth.Jwt (CurrentUser, Token, TokenError, UserId)
+import Lib.User (CreateUser (CreateUser), User (userId), createUser, findByEmail, findUser)
 import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
 import Network.Wai.Middleware.RequestLogger (logStdout)
 import Web.Scotty
@@ -21,7 +21,7 @@ import Web.Scotty
     post,
   )
 
-routes :: Connection -> (Token -> IO Jwt) -> (Token -> IO (Either TokenError CurrentUser)) -> ScottyM ()
+routes :: Connection -> (UserId -> IO Jwt) -> (Token -> IO (Either TokenError CurrentUser)) -> ScottyM ()
 routes conn signToken verifyToken = do
   middleware logStdout
 
@@ -30,30 +30,36 @@ routes conn signToken verifyToken = do
     -- TODO Not yet using passwords at all
     (AuthForm email _) <- jsonData
     [user] <- liftIO $ Lib.User.findByEmail conn email
-    token <- liftIO $ signToken $ T.pack $ userEmail user
+    token <- liftIO $ signToken $ userId user
     json $ TokenPayload token
 
-  get "/users" $ do
-    users <- liftIO $ Lib.User.findUsers conn
-    json users
-
-  get "/users/:uid" $ do
-    _ <- reqUser verifyToken
-    uid <- param "uid"
-    [user] <- liftIO $ Lib.User.findUser conn uid
-    json user
-
-  post "/users" $ do
+  post "/signup" $ do
     (Lib.User.CreateUser email) <- jsonData
     [user] <- liftIO $ Lib.User.createUser conn (Lib.User.CreateUser email)
     json user
 
+  get "/users/:uid" $ do
+    (_, tokenUserId) <- reqUser verifyToken
+    uid <- param "uid"
+    when (tokenUserId /= uid) returnForbidden
+
+    [user] <- liftIO $ Lib.User.findUser conn uid
+    json user
+
   -- Weights
   get "/users/:uid/weights" $ do
+    (_, tokenUserId) <- reqUser verifyToken
+    uid <- param "uid"
+    when (tokenUserId /= uid) returnForbidden
+
     weights <- liftIO $ findWeights conn
     json weights
 
   post "/users/:uid/weights" $ do
+    (_, tokenUserId) <- reqUser verifyToken
+    uid <- param "uid"
+    when (tokenUserId /= uid) returnForbidden
+
     (CreateWeight grams) <- jsonData
     [weight] <- liftIO $ createWeight conn (CreateWeight grams)
     json weight
