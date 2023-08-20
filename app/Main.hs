@@ -8,4 +8,5 @@ main :: IO ()
 main = do
   db <- readDBConfig
   sv <- readServerConfig
-  start $ Config db sv
+  jwt <- readJwtConfig
+  start $ Config db sv jwt

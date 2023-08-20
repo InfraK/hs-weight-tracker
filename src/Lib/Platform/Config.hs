@@ -1,10 +1,9 @@
 module Lib.Platform.Config (Config (..), DBConfig (..), ServerConfig (..), JwtConfig (..)) where
 
-import Data.Text (Text)
-
 data Config = Config
   { dbConfig :: DBConfig,
-    svConfig :: ServerConfig
+    svConfig :: ServerConfig,
+    jwtConfig :: JwtConfig
   }
 
 data DBConfig = DBConfig
@@ -20,5 +19,5 @@ data ServerConfig = ServerConfig
 
 data JwtConfig = JwtConfig
   { jwtConfigExpMinutes :: Int,
-    jwtConfigKey :: Text
+    jwtConfigKey :: String
   }

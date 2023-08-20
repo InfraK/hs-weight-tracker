@@ -1,6 +1,6 @@
-module Config (readDBConfig, readServerConfig) where
+module Config (readDBConfig, readServerConfig, readJwtConfig) where
 
-import Lib.Platform.Config (DBConfig (DBConfig), ServerConfig (ServerConfig))
+import Lib.Platform.Config (DBConfig (DBConfig), ServerConfig (ServerConfig), JwtConfig (JwtConfig))
 import System.Posix.Env (getEnvDefault)
 
 readDBConfig :: IO DBConfig
@@ -15,3 +15,9 @@ readServerConfig :: IO ServerConfig
 readServerConfig = do
   portString <- getEnvDefault "PORT" "3000"
   return $ ServerConfig (read portString)
+
+readJwtConfig :: IO JwtConfig
+readJwtConfig = do
+  expiry <- read <$> getEnvDefault "JWT_EXPIRY_MINUTES" "60"
+  key <- getEnvDefault "JWT_KEY" "DEVELOPMENT_KEY"
+  return $ JwtConfig expiry key

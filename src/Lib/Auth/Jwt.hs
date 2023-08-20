@@ -81,7 +81,7 @@ makePayload claims = Claims $ BL.toStrict $ Aeson.encode claims
 
 generateJwk :: JwtConfig -> IO Jwk
 generateJwk (JwtConfig _ key) = do
-  (_, privKey) <- generateRsaKeyPair 256 (KeyId key) Sig (Just (Signed RS256))
+  (_, privKey) <- generateRsaKeyPair 256 (KeyId $ T.pack key) Sig (Just (Signed RS256))
   return privKey
 
 encAlg :: JwtEncoding
