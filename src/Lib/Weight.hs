@@ -1,11 +1,9 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Lib.Weight (Weight (..), CreateWeight (..), createWeight, findWeights) where
 
 import Data.Aeson
+import Data.Time (UTCTime)
 import Database.PostgreSQL.Simple (Connection, Only (Only), query, query_)
 import Database.PostgreSQL.Simple.FromRow (FromRow (fromRow), field)
-import Data.Time (UTCTime)
 
 data Weight = Weight
   { weightId :: Int,

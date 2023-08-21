@@ -35,6 +35,7 @@ library
     Lib.Auth.Http
     Lib.Auth.Jwt
     Lib.Platform.Config
+    Lib.Platform.Crypto
     Lib.Platform.Db
     Lib.Routes
     Lib.User
@@ -47,6 +48,7 @@ library
     , http-types
     , jose-jwt
     , mtl
+    , password
     , postgresql-simple
     , scotty
     , text

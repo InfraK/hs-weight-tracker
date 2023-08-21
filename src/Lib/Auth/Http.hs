@@ -4,6 +4,7 @@ module Lib.Auth.Http where
 
 import Control.Monad.Trans (MonadIO (liftIO))
 import Data.Aeson
+import Data.Text (Text)
 import qualified Data.Text.Lazy as TL
 import Jose.Jwt (Jwt)
 import Lib.Auth.Jwt (CurrentUser, Token, TokenError (TokenNotFound))
@@ -12,8 +13,8 @@ import Web.Scotty (ActionM, finish, header, json, status)
 import Web.Scotty.Trans (ActionT)
 
 data AuthForm = AuthForm
-  { authEmail :: String,
-    authPassword :: String
+  { authEmail :: Text,
+    authPassword :: Text
   }
 
 instance FromJSON AuthForm where
