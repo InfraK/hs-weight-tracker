@@ -1,12 +1,6 @@
 module Main where
 
-import Config
-import Lib (start)
-import Lib.Platform.Config (Config (Config))
+import qualified Lib
 
 main :: IO ()
-main = do
-  db <- readDBConfig
-  sv <- readServerConfig
-  jwt <- readJwtConfig
-  start $ Config db sv jwt
+main = Lib.main

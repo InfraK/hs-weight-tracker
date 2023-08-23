@@ -53,14 +53,24 @@ library
     , scotty
     , text
     , time
+    , unix
+    , wai
     , wai-extra
 
 executable app
   import:         common-settings
   main-is:        Main.hs
   hs-source-dirs: app
+  build-depends:  hs-weight-tracker
+
+test-suite hs-weight-tracker-test
+  import:         common-settings 
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is:        Spec.hs
   build-depends:
     , hs-weight-tracker
-    , unix
-
-  other-modules:  Config
+    , hspec
+    , hspec-wai
+    , hspec-wai-json
+    , postgresql-simple
