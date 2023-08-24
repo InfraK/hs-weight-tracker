@@ -9,7 +9,7 @@ import Lib.Auth.Jwt (CurrentUser, Token, TokenError, UserId)
 import qualified Lib.Platform.Crypto as Crypto
 import Lib.User (CreateUser (CreateUser), User (userId), createUser, findByEmail, findUser)
 import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
-import Network.HTTP.Types (status401)
+import Network.HTTP.Types (status401, status404)
 import Network.Wai.Middleware.RequestLogger (logStdout)
 import Web.Scotty
   ( ScottyM,
@@ -30,7 +30,11 @@ routes conn signToken verifyToken = do
   -- Users
   post "/login" $ do
     (AuthForm email pass) <- jsonData
-    [user] <- liftIO $ Lib.User.findByEmail conn email
+    maybeUser <- liftIO $ Lib.User.findByEmail conn email
+    user <- case maybeUser of
+      Nothing -> status status404 >> finish
+      Just user -> return user
+
     isGood <- Crypto.verify user pass
     unless isGood (status status401 >> finish)
 
@@ -49,8 +53,11 @@ routes conn signToken verifyToken = do
     uid <- param "uid"
     when (tokenUserId /= uid) returnForbidden
 
-    [user] <- liftIO $ Lib.User.findUser conn uid
-    json user
+    maybeUser <- liftIO $ Lib.User.findUser conn uid
+
+    case maybeUser of
+      Nothing -> status status404 >> finish
+      Just user -> json user
 
   -- Weights
   get "/users/:uid/weights" $ do

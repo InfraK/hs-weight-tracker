@@ -43,16 +43,15 @@ createUser conn email hash =
     "INSERT INTO users (email, password) VALUES (?, ?) RETURNING *"
     (email, unPasswordHash hash)
 
-findUser :: Connection -> Int -> IO [User]
-findUser conn uid =
-  query
-    conn
-    "SELECT * FROM users where id = ?"
-    $ Only uid
+findUser :: Connection -> Int -> IO (Maybe User)
+findUser conn uid = do
+  singleResult <$> query conn "SELECT * FROM users where id = ?" (Only uid)
 
-findByEmail :: Connection -> Email -> IO [User]
-findByEmail conn email =
-  query
-    conn
-    "SELECT * FROM users where email = ?"
-    $ Only email
+findByEmail :: Connection -> Email -> IO (Maybe User)
+findByEmail conn email = do
+  singleResult <$> query conn "SELECT * FROM users where email = ?" (Only email)
+
+singleResult :: [a] -> Maybe a
+singleResult [x] = Just x
+singleResult [] = Nothing
+singleResult _ = Nothing
