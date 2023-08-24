@@ -6,6 +6,7 @@ import Data.Text (Text)
 import Data.Time (UTCTime)
 import Database.PostgreSQL.Simple (Connection, FromRow, Only (Only), query)
 import Database.PostgreSQL.Simple.FromRow (FromRow (fromRow), field)
+import Lib.Platform.Db (singleResult)
 
 data User = User
   { userId :: Int,
@@ -36,12 +37,14 @@ instance FromJSON CreateUser where
   parseJSON (Object v) = CreateUser <$> v .: "email" <*> v .: "password"
   parseJSON _ = fail "invalid input"
 
-createUser :: Connection -> Email -> PasswordHash Argon2 -> IO [User]
-createUser conn email hash =
-  query
-    conn
-    "INSERT INTO users (email, password) VALUES (?, ?) RETURNING *"
-    (email, unPasswordHash hash)
+createUser :: Connection -> Email -> PasswordHash Argon2 -> IO User
+createUser conn email hash = do
+  [user] <-
+    query
+      conn
+      "INSERT INTO users (email, password) VALUES (?, ?) RETURNING *"
+      (email, unPasswordHash hash)
+  return user
 
 findUser :: Connection -> Int -> IO (Maybe User)
 findUser conn uid = do
@@ -50,8 +53,3 @@ findUser conn uid = do
 findByEmail :: Connection -> Email -> IO (Maybe User)
 findByEmail conn email = do
   singleResult <$> query conn "SELECT * FROM users where email = ?" (Only email)
-
-singleResult :: [a] -> Maybe a
-singleResult [x] = Just x
-singleResult [] = Nothing
-singleResult _ = Nothing

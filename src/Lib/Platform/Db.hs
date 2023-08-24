@@ -1,4 +1,4 @@
-module Lib.Platform.Db (getConnection) where
+module Lib.Platform.Db (getConnection, singleResult) where
 
 import Database.PostgreSQL.Simple
 import Lib.Platform.Config (DBConfig (DBConfig))
@@ -12,3 +12,8 @@ getConnection (DBConfig host db user pwd) =
         connectUser = user,
         connectPassword = pwd
       }
+
+singleResult :: [a] -> Maybe a
+singleResult [x] = Just x
+singleResult [] = Nothing
+singleResult _ = Nothing

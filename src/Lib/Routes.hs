@@ -45,7 +45,7 @@ routes conn signToken verifyToken = do
     (Lib.User.CreateUser email pass) <- jsonData
     hash <- Crypto.hash pass
 
-    [user] <- liftIO $ Lib.User.createUser conn email hash
+    user <- liftIO $ Lib.User.createUser conn email hash
     json user
 
   get "/users/:uid" $ do
@@ -65,7 +65,7 @@ routes conn signToken verifyToken = do
     uid <- param "uid"
     when (tokenUserId /= uid) returnForbidden
 
-    weights <- liftIO $ findWeights conn
+    weights <- liftIO $ findWeights conn uid
     json weights
 
   post "/users/:uid/weights" $ do
@@ -74,5 +74,5 @@ routes conn signToken verifyToken = do
     when (tokenUserId /= uid) returnForbidden
 
     (CreateWeight grams) <- jsonData
-    [weight] <- liftIO $ createWeight conn (CreateWeight grams)
+    weight <- liftIO $ createWeight conn (CreateWeight grams) uid
     json weight
