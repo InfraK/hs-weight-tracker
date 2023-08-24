@@ -30,15 +30,11 @@ routes conn signToken verifyToken = do
   -- Users
   post "/login" $ do
     (AuthForm email pass) <- jsonData
-    liftIO $ print "Got the data"
     [user] <- liftIO $ Lib.User.findByEmail conn email
-    liftIO $ print "Got the user"
     isGood <- Crypto.verify user pass
-    liftIO $ print "Tried to verify"
     unless isGood (status status401 >> finish)
 
     token <- liftIO $ signToken $ userId user
-    liftIO $ print "Tried to sign"
     json $ TokenPayload token
 
   post "/signup" $ do
