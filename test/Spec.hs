@@ -70,6 +70,33 @@ spec = with app $ do
       (tkn, uid) <- login
       authRequest tkn "GET" ("/users/" <> uid) "" `shouldRespondWith` partialMatcher ("\"id\":" <> uid)
 
+  describe "GET /users/:id/weights" $ do
+    it "responds with 401 for unauthenticated users" $ do
+      get "/users/1/weights" `shouldRespondWith` 401
+
+    it "responds with 403 for other users" $ do
+      (tkn, uid) <- login
+      let differentId = uid <> "1"
+      authRequest tkn "GET" ("/users/" <> differentId <> "/weights") "" `shouldRespondWith` 403
+
+    it "responds with 200 to authenticated users" $ do
+      (tkn, uid) <- login
+      authRequest tkn "GET" ("/users/" <> uid <> "/weights") "" `shouldRespondWith` 200
+
+  describe "POST /users/:id/weights" $ do
+    it "responds with 401 for unauthenticated users" $ do
+      post "/users/1/weights" "" `shouldRespondWith` 401
+
+    it "responds with 403 for other users" $ do
+      (tkn, uid) <- login
+      let differentId = uid <> "1"
+      authRequest tkn "POST" ("/users/" <> differentId <> "/weights") "" `shouldRespondWith` 403
+
+    it "responds with 200 to authenticated users" $ do
+      (tkn, uid) <- login
+      let postBody = [json|{weightGrams: 3000}|]
+      authRequest tkn "POST" ("/users/" <> uid <> "/weights") postBody `shouldRespondWith` partialMatcher "\"weightGrams\":3000"
+
 authRequest :: Token -> Method -> BS.ByteString -> BLS.ByteString -> WaiSession st SResponse
 authRequest tkn method path body = do
   let headers = [("Authorization", encodeUtf8 $ "Bearer " <> tkn), ("Content-Type", "application/json")]
@@ -91,6 +118,7 @@ flushDb :: IO ()
 flushDb = do
   dbConfig <- readDBConfig
   conn <- getConnection dbConfig
+  _ <- execute_ conn "DELETE FROM weights USING users WHERE weights.user_id = users.id AND users.email = 'my-email@email.com'"
   _ <- execute_ conn "DELETE FROM users where email = 'my-email@email.com'"
   return ()
 
