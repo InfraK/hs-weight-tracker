@@ -69,8 +69,13 @@ test-suite hs-weight-tracker-test
   hs-source-dirs: test
   main-is:        Spec.hs
   build-depends:
+    , aeson
+    , bytestring
     , hs-weight-tracker
     , hspec
     , hspec-wai
     , hspec-wai-json
+    , http-types
     , postgresql-simple
+    , text
+    , wai-extra

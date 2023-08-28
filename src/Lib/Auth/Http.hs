@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE InstanceSigs #-}
 
 module Lib.Auth.Http where
 
@@ -7,7 +8,7 @@ import Data.Aeson
 import Data.Text (Text)
 import qualified Data.Text.Lazy as TL
 import Jose.Jwt (Jwt)
-import Lib.Auth.Jwt (CurrentUser, Token, TokenError (TokenNotFound))
+import Lib.Auth.Jwt (CurrentUser, Token, TokenError (TokenNotFound), UserId)
 import Network.HTTP.Types.Status (status401, status403)
 import Web.Scotty (ActionM, finish, header, json, status)
 import Web.Scotty.Trans (ActionT)
@@ -21,14 +22,17 @@ instance FromJSON AuthForm where
   parseJSON (Object v) = AuthForm <$> v .: "email" <*> v .: "password"
   parseJSON _ = fail "invalid input"
 
-data TokenPayload = TokenPayload
-  { tokenPayloadToken :: Jose.Jwt.Jwt
+data LoginPayload = LoginPayload
+  { loginPayloadToken :: Jose.Jwt.Jwt,
+    loginPayloadUserId :: UserId
   }
 
-instance ToJSON TokenPayload where
-  toJSON (TokenPayload token) =
+instance ToJSON LoginPayload where
+  toJSON (LoginPayload token uid) =
     object
-      ["token" .= token]
+      [ "token" .= token,
+        "userId" .= uid
+      ]
 
 reqUser :: (Token -> IO (Either TokenError CurrentUser)) -> ActionM CurrentUser
 reqUser verify = do

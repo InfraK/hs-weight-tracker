@@ -4,7 +4,7 @@ import Control.Monad (unless, when)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Database.PostgreSQL.Simple (Connection)
 import Jose.Jwt (Jwt)
-import Lib.Auth.Http (AuthForm (AuthForm), TokenPayload (TokenPayload), reqUser, returnForbidden)
+import Lib.Auth.Http (AuthForm (AuthForm), LoginPayload (LoginPayload), reqUser, returnForbidden)
 import Lib.Auth.Jwt (CurrentUser, Token, TokenError, UserId)
 import qualified Lib.Platform.Crypto as Crypto
 import Lib.User (CreateUser (CreateUser), User (userId), createUser, findByEmail, findUser)
@@ -37,9 +37,9 @@ routes conn signToken verifyToken = do
 
     isGood <- Crypto.verify user pass
     unless isGood (status status401 >> finish)
-
-    token <- liftIO $ signToken $ userId user
-    json $ TokenPayload token
+    let uid = userId user
+    token <- liftIO $ signToken uid
+    json $ LoginPayload token uid
 
   post "/signup" $ do
     (Lib.User.CreateUser email pass) <- jsonData
