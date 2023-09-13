@@ -46,6 +46,14 @@ spec = with app $ do
       post "/signup" postBody
         `shouldRespondWith` 200
 
+    it "responds with 403 when registering with a duplicated email" $ do
+      let postBody = [json|{email: "another-email@email.com", password: "my-passwords"}|]
+      post "/signup" postBody
+        `shouldRespondWith` 200
+      let repeatBody = [json|{email: "another-email@email.com", password: "my-passwords"}|]
+      post "/signup" repeatBody
+        `shouldRespondWith` 400
+
   describe "POST /login" $ do
     it "responds with 200 for valid credentials" $ do
       let postBody = [json|{email: "my-email@email.com", password: "my-password"}|]
