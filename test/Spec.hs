@@ -13,7 +13,7 @@ import Database.PostgreSQL.Simple
 import GHC.Generics
 import Lib (app)
 import Lib.Platform.Config (readDBConfig)
-import Lib.Platform.Db (getConnection)
+import Lib.Platform.Db (openConn)
 import Network.HTTP.Types (Method)
 import Network.Wai.Test (SResponse (simpleBody))
 import Test.Hspec (Spec, describe, hspec, it)
@@ -125,7 +125,7 @@ getLoginPayload res = Aeson.decode $ simpleBody res :: Maybe LoginPayload
 flushDb :: IO ()
 flushDb = do
   dbConfig <- readDBConfig
-  conn <- getConnection dbConfig
+  conn <- openConn dbConfig
   _ <- execute_ conn "DELETE FROM weights USING users WHERE weights.user_id = users.id AND users.email = 'my-email@email.com'"
   _ <- execute_ conn "DELETE FROM users WHERE email IN ('another-email@email.com', 'my-email@email.com')"
   return ()
