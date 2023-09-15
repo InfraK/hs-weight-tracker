@@ -50,6 +50,7 @@ library
     , mtl
     , password
     , postgresql-simple
+    , resource-pool
     , scotty
     , text
     , time

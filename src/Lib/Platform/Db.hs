@@ -1,17 +1,22 @@
-module Lib.Platform.Db (getConnection, singleResult) where
+module Lib.Platform.Db (singleResult, createPool) where
 
+import Data.Pool (Pool, defaultPoolConfig, newPool)
 import Database.PostgreSQL.Simple
 import Lib.Platform.Config (DBConfig (DBConfig))
 
-getConnection :: DBConfig -> IO Connection
-getConnection (DBConfig host db user pwd) =
-  connect $
-    defaultConnectInfo
-      { connectHost = host,
-        connectDatabase = db,
-        connectUser = user,
-        connectPassword = pwd
-      }
+createPool :: DBConfig -> IO (Pool Connection)
+createPool config = newPool poolConfig
+  where
+    poolConfig = defaultPoolConfig (connect $ parseConfig config) close 1 10
+
+parseConfig :: DBConfig -> ConnectInfo
+parseConfig (DBConfig host db user pwd) =
+  defaultConnectInfo
+    { connectHost = host,
+      connectDatabase = db,
+      connectUser = user,
+      connectPassword = pwd
+    }
 
 singleResult :: [a] -> Maybe a
 singleResult [x] = Just x

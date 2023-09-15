@@ -2,7 +2,7 @@ module Lib (main, start, app) where
 
 import Lib.Auth.Jwt (generateJwk, sign, verify)
 import Lib.Platform.Config (Config (Config), ServerConfig (ServerConfig), readConfig)
-import Lib.Platform.Db (getConnection)
+import Lib.Platform.Db (createPool)
 import Lib.Routes (routes)
 import Network.Wai (Application)
 import Web.Scotty
@@ -25,8 +25,8 @@ app = do
 
 getRoutes :: Config -> IO (ScottyM ())
 getRoutes (Config db _ jwtConfig) = do
-  conn <- getConnection db
+  connPool <- createPool db
   jwk <- generateJwk jwtConfig
   let signToken = sign jwk jwtConfig
   let verifyToken = verify jwk
-  return $ routes conn signToken verifyToken
+  return $ routes connPool signToken verifyToken

@@ -2,6 +2,7 @@ module Lib.Routes (routes) where
 
 import Control.Monad (unless, when)
 import Control.Monad.IO.Class (MonadIO (liftIO))
+import Data.Pool (Pool, withResource)
 import Database.PostgreSQL.Simple (Connection)
 import Jose.Jwt (Jwt)
 import Lib.Auth.Http (AuthForm (AuthForm), LoginPayload (LoginPayload), reqUser, returnForbidden)
@@ -9,7 +10,7 @@ import Lib.Auth.Jwt (CurrentUser, Token, TokenError, UserId)
 import qualified Lib.Platform.Crypto as Crypto
 import Lib.User (CreateUser (CreateUser), User (userId), createUser, findByEmail, findUser)
 import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
-import Network.HTTP.Types (status401, status404, status400)
+import Network.HTTP.Types (status400, status401, status404)
 import Network.Wai.Middleware.RequestLogger (logStdout)
 import Web.Scotty
   ( ScottyM,
@@ -23,14 +24,14 @@ import Web.Scotty
     status,
   )
 
-routes :: Connection -> (UserId -> IO Jwt) -> (Token -> IO (Either TokenError CurrentUser)) -> ScottyM ()
-routes conn signToken verifyToken = do
+routes :: Pool Connection -> (UserId -> IO Jwt) -> (Token -> IO (Either TokenError CurrentUser)) -> ScottyM ()
+routes connPool signToken verifyToken = do
   middleware logStdout
 
   -- Users
   post "/login" $ do
     (AuthForm email pass) <- jsonData
-    maybeUser <- liftIO $ Lib.User.findByEmail conn email
+    maybeUser <- liftIO $ withResource connPool (\conn -> Lib.User.findByEmail conn email)
     user <- case maybeUser of
       Nothing -> status status404 >> finish
       Just user -> return user
@@ -44,7 +45,7 @@ routes conn signToken verifyToken = do
   post "/signup" $ do
     (Lib.User.CreateUser email pass) <- jsonData
     hash <- Crypto.hash pass
-    userOrError <- liftIO $ Lib.User.createUser conn email hash
+    userOrError <- liftIO $ withResource connPool (\conn -> Lib.User.createUser conn email hash)
     case userOrError of
       Left err -> status status400 >> json err
       Right user -> json user
@@ -54,7 +55,7 @@ routes conn signToken verifyToken = do
     uid <- param "uid"
     when (tokenUserId /= uid) returnForbidden
 
-    maybeUser <- liftIO $ Lib.User.findUser conn uid
+    maybeUser <- liftIO $ withResource connPool (\conn -> Lib.User.findUser conn uid)
 
     case maybeUser of
       Nothing -> status status404 >> finish
@@ -66,7 +67,7 @@ routes conn signToken verifyToken = do
     uid <- param "uid"
     when (tokenUserId /= uid) returnForbidden
 
-    weights <- liftIO $ findWeights conn uid
+    weights <- liftIO $ withResource connPool (\conn -> findWeights conn uid)
     json weights
 
   post "/users/:uid/weights" $ do
@@ -75,5 +76,5 @@ routes conn signToken verifyToken = do
     when (tokenUserId /= uid) returnForbidden
 
     (CreateWeight grams) <- jsonData
-    weight <- liftIO $ createWeight conn (CreateWeight grams) uid
+    weight <- liftIO $ withResource connPool (\conn -> createWeight conn (CreateWeight grams) uid)
     json weight

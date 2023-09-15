@@ -127,7 +127,7 @@ flushDb = do
   dbConfig <- readDBConfig
   conn <- getConnection dbConfig
   _ <- execute_ conn "DELETE FROM weights USING users WHERE weights.user_id = users.id AND users.email = 'my-email@email.com'"
-  _ <- execute_ conn "DELETE FROM users where email = 'my-email@email.com'"
+  _ <- execute_ conn "DELETE FROM users WHERE email IN ('another-email@email.com', 'my-email@email.com')"
   return ()
 
 partialMatcher :: BS.ByteString -> ResponseMatcher
