@@ -37,6 +37,7 @@ library
     Lib.Platform.Config
     Lib.Platform.Crypto
     Lib.Platform.Db
+    Lib.Platform.Except
     Lib.Routes
     Lib.User
     Lib.Weight

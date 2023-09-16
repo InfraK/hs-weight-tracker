@@ -3,9 +3,9 @@ module Lib (main, start, app) where
 import Lib.Auth.Jwt (generateJwk, sign, verify)
 import Lib.Platform.Config (Config (Config), ServerConfig (ServerConfig), readConfig)
 import Lib.Platform.Db (createPool)
+import Lib.Platform.Except (Except)
 import Lib.Routes (routes)
 import Network.Wai (Application)
-import Data.Text.Lazy (Text)
 import Web.Scotty.Trans (ScottyT, scottyT, scottyAppT)
 
 main :: IO ()
@@ -24,7 +24,7 @@ app = do
   r <- getRoutes config
   scottyAppT id r
 
-getRoutes :: Config -> IO (ScottyT Text IO ())
+getRoutes :: Config -> IO (ScottyT Except IO ())
 getRoutes (Config db _ jwtConfig) = do
   connPool <- createPool db
   jwk <- generateJwk jwtConfig
