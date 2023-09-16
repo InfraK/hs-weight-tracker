@@ -10,8 +10,7 @@ import qualified Data.Text.Lazy as TL
 import Jose.Jwt (Jwt)
 import Lib.Auth.Jwt (CurrentUser, Token, TokenError (TokenNotFound), UserId)
 import Network.HTTP.Types.Status (status401, status403)
-import Web.Scotty (ActionM, finish, header, json, status)
-import Web.Scotty.Trans (ActionT)
+import Web.Scotty.Trans (ActionT, finish, header, json, status)
 
 data AuthForm = AuthForm
   { authEmail :: Text,
@@ -34,7 +33,7 @@ instance ToJSON LoginPayload where
         "userId" .= uid
       ]
 
-reqUser :: (Token -> IO (Either TokenError CurrentUser)) -> ActionM CurrentUser
+reqUser :: (Token -> IO (Either TokenError CurrentUser)) -> ActionT TL.Text IO CurrentUser
 reqUser verify = do
   user <- getAuthUser verify
   case user of
@@ -58,5 +57,5 @@ getAuthToken = do
   where
     parseHeader txt = TL.toStrict $ last $ TL.words txt
 
-returnForbidden :: ActionM ()
+returnForbidden :: ActionT TL.Text IO ()
 returnForbidden = status status403 >> finish

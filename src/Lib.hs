@@ -5,7 +5,8 @@ import Lib.Platform.Config (Config (Config), ServerConfig (ServerConfig), readCo
 import Lib.Platform.Db (createPool)
 import Lib.Routes (routes)
 import Network.Wai (Application)
-import Web.Scotty
+import Data.Text.Lazy (Text)
+import Web.Scotty.Trans (ScottyT, scottyT, scottyAppT)
 
 main :: IO ()
 main = do
@@ -15,15 +16,15 @@ main = do
 start :: Config -> IO ()
 start (Config db (ServerConfig port) jwtConfig) = do
   r <- getRoutes (Config db (ServerConfig port) jwtConfig)
-  scotty port r
+  scottyT port id r
 
 app :: IO Application
 app = do
   config <- readConfig
   r <- getRoutes config
-  scottyApp r
+  scottyAppT id r
 
-getRoutes :: Config -> IO (ScottyM ())
+getRoutes :: Config -> IO (ScottyT Text IO ())
 getRoutes (Config db _ jwtConfig) = do
   connPool <- createPool db
   jwk <- generateJwk jwtConfig

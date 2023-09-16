@@ -3,6 +3,7 @@ module Lib.Routes (routes) where
 import Control.Monad (unless, when)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Pool (Pool, withResource)
+import Data.Text.Lazy (Text)
 import Database.PostgreSQL.Simple (Connection)
 import Jose.Jwt (Jwt)
 import Lib.Auth.Http (AuthForm (AuthForm), LoginPayload (LoginPayload), reqUser, returnForbidden)
@@ -12,8 +13,8 @@ import Lib.User (CreateUser (CreateUser), User (userId), createUser, findByEmail
 import Lib.Weight (CreateWeight (CreateWeight), createWeight, findWeights)
 import Network.HTTP.Types (status400, status401, status404)
 import Network.Wai.Middleware.RequestLogger (logStdout)
-import Web.Scotty
-  ( ScottyM,
+import Web.Scotty.Trans
+  ( ScottyT,
     finish,
     get,
     json,
@@ -24,7 +25,7 @@ import Web.Scotty
     status,
   )
 
-routes :: Pool Connection -> (UserId -> IO Jwt) -> (Token -> IO (Either TokenError CurrentUser)) -> ScottyM ()
+routes :: Pool Connection -> (UserId -> IO Jwt) -> (Token -> IO (Either TokenError CurrentUser)) -> ScottyT Text IO ()
 routes connPool signToken verifyToken = do
   middleware logStdout
 
